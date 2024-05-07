@@ -173,7 +173,8 @@ class KANLayer(nn.Module):
         y = coef2curve(x_eval=x, grid=self.grid[self.weight_sharing], coef=self.coef[self.weight_sharing], k=self.k, device=self.device)  # shape (size, batch)
         y = y.permute(1, 0)  # shape (batch, size)
         postspline = y.clone().reshape(batch, self.out_dim, self.in_dim)
-        y = self.scale_base.unsqueeze(dim=0) * base + self.scale_sp.unsqueeze(dim=0) * y
+
+        y = self.scale_base.unsqueeze(dim=0).to(self.device) * base + self.scale_sp.unsqueeze(dim=0).to(self.device) * y
         y = self.mask[None, :] * y
         postacts = y.clone().reshape(batch, self.out_dim, self.in_dim)
         y = torch.sum(y.reshape(batch, self.out_dim, self.in_dim), dim=2)  # shape (batch, out_dim)

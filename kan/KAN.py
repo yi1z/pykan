@@ -307,9 +307,8 @@ class KAN(nn.Module):
         self.acts.append(x)  # acts shape: (batch, width[l])
 
         for l in range(self.depth):
-
             x_numerical, preacts, postacts_numerical, postspline = self.act_fun[l](x)
-
+            
             if self.symbolic_enabled == True:
                 x_symbolic, postacts_symbolic = self.symbolic_fun[l](x)
             else:
