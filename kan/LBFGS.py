@@ -250,24 +250,27 @@ class LBFGS(Optimizer):
             self._numel_cache = reduce(lambda total, p: total + p.numel(), self._params, 0)
         return self._numel_cache
 
+    # modified for cuda
     def _gather_flat_grad(self):
         views = []
         for p in self._params:
             if p.grad is None:
-                view = p.new(p.numel()).zero_()
+                view = p.new(p.numel()).zero_().to(self._params[0].device)
             elif p.grad.is_sparse:
-                view = p.grad.to_dense().view(-1)
+                view = p.grad.to_dense().view(-1).to(self._params[0].device)
             else:
-                view = p.grad.view(-1)
+                view = p.grad.view(-1).to(self._params[0].device)
             views.append(view)
         return torch.cat(views, 0)
 
+    # modified for cuda
     def _add_grad(self, step_size, update):
         offset = 0
         for p in self._params:
             numel = p.numel()
+            update_device = update[offset:offset + numel].to(p.device)
             # view as to avoid deprecated pointwise semantics
-            p.add_(update[offset:offset + numel].view_as(p), alpha=step_size)
+            p.add_(update_device.view_as(p), alpha=step_size)
             offset += numel
         assert offset == self._numel()
 
