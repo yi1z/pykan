@@ -207,7 +207,8 @@ class KANLayer(nn.Module):
         tensor([[-3.0002, -1.7882, -0.5763,  0.6357,  1.8476,  3.0002]])
         '''
         batch = x.shape[0]
-        x = torch.einsum('ij,k->ikj', x, torch.ones(self.out_dim, ).to(self.device)).reshape(batch, self.size).permute(1, 0)
+        # fix for cuda
+        x = torch.einsum('ij,k->ikj', x.to(self.device), torch.ones(self.out_dim, ).to(self.device)).reshape(batch, self.size).permute(1, 0)
         x_pos = torch.sort(x, dim=1)[0]
         y_eval = coef2curve(x_pos, self.grid, self.coef, self.k, device=self.device)
         num_interval = self.grid.shape[1] - 1

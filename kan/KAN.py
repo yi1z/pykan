@@ -307,6 +307,9 @@ class KAN(nn.Module):
         self.acts.append(x)  # acts shape: (batch, width[l])
 
         for l in range(self.depth):
+            # move x to device
+            # fix for cuda
+            x = x.to(self.device)
             x_numerical, preacts, postacts_numerical, postspline = self.act_fun[l](x)
             
             if self.symbolic_enabled == True:
@@ -842,7 +845,8 @@ class KAN(nn.Module):
         pbar = tqdm(range(steps), desc='description', ncols=100)
 
         if loss_fn == None:
-            loss_fn = loss_fn_eval = lambda x, y: torch.mean((x - y) ** 2)
+            # fix for cuda
+            loss_fn = loss_fn_eval = lambda x, y: torch.mean((x.to(self.device) - y.to(self.device)) ** 2)
         else:
             loss_fn = loss_fn_eval = loss_fn
 
